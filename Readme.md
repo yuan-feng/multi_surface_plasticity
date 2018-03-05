@@ -8,7 +8,7 @@ The multi-surface material models are implemented with a simple python-based GUI
 
 #### Various Yield Surfaces
 
-There yield surfaces were implemented for the multi-surface-material model.
+Three yield surfaces were implemented for the multi-surface-material model.
 - von-Mises
 - Drucker-Prager
 - rounded-Mohr-Coulomb
