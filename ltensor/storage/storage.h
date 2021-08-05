@@ -204,7 +204,7 @@ public:
     long getBeginAddress(int offset,int dim){
 
         long gsize=0;
-        gsize= (dim==0?0: stride(getPos(ordering,dim-1,rank) )) ;
+        gsize= (dim==0?0: stride[getPos(ordering,dim-1,rank) ]) ;
         return gsize+offset;
         }
 

@@ -36,7 +36,10 @@ The cyclic behaviors of the stress-strain results:
 
 ![cyclic_behavior](img/cyclic_behavior.png)
 
-
+#### Prerequisite: 
+```bash
+sudo apt install python-tk python3-matplotlib
+```
 
 #### Reference
 

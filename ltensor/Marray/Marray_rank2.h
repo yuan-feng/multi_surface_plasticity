@@ -32,13 +32,11 @@
 #include <assert.h>
 #endif
 
-#define CHECK										\
-	assert( (n1<get_dim1())&& (n2<get_dim2()) );	\
-	assert( (n1>=0) && (n2>=0));
-
+#define CHECK                                       \
+    assert((n1 < get_dim1()) && (n2 < get_dim2())); \
+    assert((n1 >= 0) && (n2 >= 0));
 
 //#define CHECK_Marray_rank2
-
 
 #include <algorithm>
 #include <iostream>
@@ -52,60 +50,57 @@
 #include "../Expr/Expr1/Expr1s.h"
 #include "../Expr/Expr2/Expr2s.h"
 
-
 /* DGESV prototype */
 // extern void dgesv_( int* n, int* nrhs, double* a, int* lda, int* ipiv,
 //                     double* b, int* ldb, int* info );
 
 #ifdef _LTENSOR_HAVE_CLAPACK
-extern "C" {
+extern "C"
+{
 #include <clapack.h>
 }
 #endif
 
-template < class A, class T, char i > class Expr1;
-template < class A, class T, char i, char j > class Expr2;
-template < class A, class T> class F_Expr2;
-
-
+template <class A, class T, char i>
+class Expr1;
+template <class A, class T, char i, char j>
+class Expr2;
+template <class A, class T>
+class F_Expr2;
 
 #define rank 2
 
 //
 // FUNTIONS DECLARATIONS in order to FRIEND Function "ostream <<"  to work
 //
-template < class T, class base> class Marray <T, rank, base>;
+template <class T, class base>
+class Marray<T, rank, base>;
 
-template<class T, class base>
-std::ostream & operator << (std::ostream & os, const Marray<T, rank, base> & v);
+template <class T, class base>
+std::ostream &operator<<(std::ostream &os, const Marray<T, rank, base> &v);
 
 //
 // Class Definition
 //
-template < class T, class base>
-class Marray <T, rank, base> : public base
+template <class T, class base>
+class Marray<T, rank, base> : public base
 {
-
 
     ////////////////
     //Constructors
     ///////////////
 public:
-
-
-
-    Marray (long dimension1, long dimension2): base(dimension1, dimension2)
+    Marray(long dimension1, long dimension2) : base(dimension1, dimension2)
     {
         (*this) = (T)0.0;
-
     }
 
-    Marray (long dimension1, long dimension2, T valor): base(dimension1, dimension2)
+    Marray(long dimension1, long dimension2, T valor) : base(dimension1, dimension2)
     {
         *this = valor;
     }
 
-    Marray(long dimension1, long dimension2, std::string type): base(dimension1, dimension2)
+    Marray(long dimension1, long dimension2, std::string type) : base(dimension1, dimension2)
     {
         if (type == "identity")
         {
@@ -113,19 +108,16 @@ public:
         }
         else
         {
-            std::cerr << "Marray (rank 2) -- Unknown type " << type << ". Defaulting to zero!!\n" << std::endl;
+            std::cerr << "Marray (rank 2) -- Unknown type " << type << ". Defaulting to zero!!\n"
+                      << std::endl;
             *this = (T)0.0;
         }
     };
 
-    Marray()
-    {
-    };
-
-
+    Marray(){};
 
     template <class fType, class b>
-    Marray<T, rank, base>& operator=(const Marray<fType, rank, b> &rterm)
+    Marray<T, rank, base> &operator=(const Marray<fType, rank, b> &rterm)
     {
         //	   //make sure sizes are compatible
         //	   //base::equals(*dynamic_cast<base*>(const_cast<Marray<T,rank,base>*> (&rterm)) );
@@ -136,11 +128,11 @@ public:
         //		for(int i=0;i<get_dim1();i++)
         //			for(int j=0;j<get_dim2();j++)
         //			(*this)(i,j)=rterm(i,j);
-        base::operator=(*dynamic_cast<const b*>(&rterm));
+        base::operator=(*dynamic_cast<const b *>(&rterm));
         return *this;
     }
 
-    Marray<T, rank, base>& operator=(const Marray<T, rank, base> &rterm)
+    Marray<T, rank, base> &operator=(const Marray<T, rank, base> &rterm)
     {
         //make sure sizes are compatible
         //base::equals(*dynamic_cast<base*>(const_cast<Marray<T,rank,base>*> (&rterm)) );
@@ -148,13 +140,12 @@ public:
         //for(int i=0;i<get_dim1();i++)
         //	for(int j=0;j<get_dim2();j++)
         //	(*this)(i,j)=rterm(i,j);
-        base::operator=(*dynamic_cast<const base*>(&rterm));
+        base::operator=(*dynamic_cast<const base *>(&rterm));
         return *this;
-
     }
 
     template <class A, class U>
-    Marray<T, rank, base>& operator=(const F_Expr2 < A, U> &expr)
+    Marray<T, rank, base> &operator=(const F_Expr2<A, U> &expr)
     {
 
         for (int i = 0; i < expr.get_dim1(); i++)
@@ -163,82 +154,72 @@ public:
                 (*this)(i, j) = expr(i, j);
             }
 
-
         return (*this);
     }
 
     template <class U>
-    inline Marray<T, rank, base> & operator= (const U &u)
+    inline Marray<T, rank, base> &operator=(const U &u)
     {
-        for ( int i = 0; i < get_dim1(); i++)
+        for (int i = 0; i < get_dim1(); i++)
             for (int j = 0; j < get_dim2(); j++)
             {
                 (*this)(i, j) = u;
             }
         return *this;
-
     }
 
     template <class U>
-    inline Marray<T, rank, base> & operator+= (const U &u)
+    inline Marray<T, rank, base> &operator+=(const U &u)
     {
-        for ( int i = 0; i < get_dim1(); i++)
+        for (int i = 0; i < get_dim1(); i++)
             for (int j = 0; j < get_dim2(); j++)
             {
                 (*this)(i, j) += u;
             }
         return *this;
-
     }
 
     template <class U>
-    inline Marray<T, rank, base> & operator-= (const U &u)
+    inline Marray<T, rank, base> &operator-=(const U &u)
     {
-        for ( int i = 0; i < get_dim1(); i++)
+        for (int i = 0; i < get_dim1(); i++)
             for (int j = 0; j < get_dim2(); j++)
             {
                 (*this)(i, j) -= u;
             }
         return *this;
-
     }
 
-
     template <class U>
-    inline Marray<T, rank, base> & operator*= (const U &u)
+    inline Marray<T, rank, base> &operator*=(const U &u)
     {
-        for ( int i = 0; i < get_dim1(); i++)
+        for (int i = 0; i < get_dim1(); i++)
             for (int j = 0; j < get_dim2(); j++)
             {
                 (*this)(i, j) *= u;
             }
         return *this;
-
     }
 
-
     template <class U>
-    inline Marray<T, rank, base> & operator/= (const U &u)
+    inline Marray<T, rank, base> &operator/=(const U &u)
     {
-        for ( int i = 0; i < get_dim1(); i++)
+        for (int i = 0; i < get_dim1(); i++)
             for (int j = 0; j < get_dim2(); j++)
             {
                 (*this)(i, j) /= u;
             }
         return *this;
-
     }
 
     //#else
     //	using base::operator=;
     //#endif
 
-
-    Marray(long* dimensions): base(dimensions)
+    Marray(long *dimensions) : base(dimensions)
     {
         (*this) = 0;
     }
-
 
     //copy constructor
     Marray(const Marray<T, rank, base> &R)
@@ -258,16 +239,7 @@ public:
             }
         }
     }
-    inline const T operator() (const int n1, const int n2) const
-    {
-#ifdef CHECK_OOB
-        CHECK
-#endif
-        return base::operator()(n1, n2);
-
-    }
-
-    inline T & operator() (const int n1, const int n2)
+    inline const T operator()(const int n1, const int n2) const
     {
 #ifdef CHECK_OOB
         CHECK
@@ -275,35 +247,36 @@ public:
         return base::operator()(n1, n2);
     }
 
+    inline T &operator()(const int n1, const int n2)
+    {
+#ifdef CHECK_OOB
+        CHECK
+#endif
+        return base::operator()(n1, n2);
+    }
 
     //////////////////////////////////////////////////////////////
     // MEMBER FUNCTIONS
     //////////////////////////////////////////////////////////////
 
-
-
     void resize(long d1, long d2)
     {
-        unsigned long  dim[2];
+        unsigned long dim[2];
         dim[0] = d1;
         dim[1] = d2;
         base::resize(dim);
         (*this) = (T)0;
-
     }
 
     inline int get_size() const
     {
 
         return base::size[0] * base::size[1];
-
     }
-
 
     inline int get_dim1() const
     {
         return base::size[0];
-
     }
 
     inline int get_dim2() const
@@ -332,16 +305,9 @@ public:
             stream >> delim;
             assert(delim == ';');
         }
-
-
-
-
-
     }
 
-    friend std::ostream & operator << <T>
-    (std::ostream & os, const Marray<T, rank, base> & v);
-
+    friend std::ostream &operator<<<T>(std::ostream &os, const Marray<T, rank, base> &v);
 
     //////////////////////////////////////////////////////////////
     // Common Matrix Operations
@@ -354,12 +320,9 @@ public:
             {
                 (*this)(i, j) = (T)(i == j ? 1 : 0);
             }
-
     }
+
 private:
-
-
-
     inline void NBackSubstitution(int *nrow, Marray<T, rank, base> &Mtr)
     {
 
@@ -380,9 +343,7 @@ private:
                 (*this)(i, k) = acum / Mtr(nrow[i], i);
                 //cout<<"i:"<<i<<" " << "k:"<<k<<"="<<(*this)(i,k)<<endl;
             }
-
         }
-
     }
 
     //---------------------------------------
@@ -404,7 +365,6 @@ private:
         }
     }
 
-
     inline Marray<T, rank, base> NBackSubstitutionRet(int *nrow, Marray<T, rank, base> &Mtr)
     {
 
@@ -424,20 +384,13 @@ private:
                 ret(i, k) = acum / Mtr(nrow[i], i);
                 //cout<<"i:"<<i<<" " << "k:"<<k<<"="<<(*this)(i,k)<<endl;
             }
-
         }
         return ret;
-
     }
 
-
-
-
-
 public:
-
     //J.Abell added the const qualifier heres
-    void compute_deviatoric_tensor(Marray<T, rank, base> & v, double & mean_trace) const
+    void compute_deviatoric_tensor(Marray<T, rank, base> &v, double &mean_trace) const
     {
 
         Index<'i'> iG;
@@ -450,9 +403,7 @@ public:
         }
     }
 
-
-
-    void convert_to_Tensor1(Marray<T, 1> & v)
+    void convert_to_Tensor1(Marray<T, 1> &v)
     {
         int dim1 = get_dim1();
         int dim2 = get_dim2();
@@ -465,35 +416,32 @@ public:
         }
     }
 
-
-    Marray<T, rank, base>& RotationMatrixDeg(const double theta1)
+    Marray<T, rank, base> &RotationMatrixDeg(const double theta1)
     {
         double pi = 2.0 * atan2(1, 0);
         double theta = pi * theta1 / 180.0;
-        (*this)(0, 0) =	cos(theta);
-        (*this)(1, 0) =	sin(theta);
-        (*this)(1, 1) =	cos(theta);
-        (*this)(0, 1) =	-sin(theta);
+        (*this)(0, 0) = cos(theta);
+        (*this)(1, 0) = sin(theta);
+        (*this)(1, 1) = cos(theta);
+        (*this)(0, 1) = -sin(theta);
         (*this)(2, 2) = 1.0;
         return *this;
     }
-    Marray<T, rank, base>& RotationMatrix(const double theta)
+    Marray<T, rank, base> &RotationMatrix(const double theta)
     {
-        (*this)(0, 0) =	cos(theta);
-        (*this)(1, 0) =	sin(theta);
-        (*this)(1, 1) =	cos(theta);
-        (*this)(0, 1) =	-sin(theta);
+        (*this)(0, 0) = cos(theta);
+        (*this)(1, 0) = sin(theta);
+        (*this)(1, 1) = cos(theta);
+        (*this)(0, 1) = -sin(theta);
         (*this)(2, 2) = 1.0;
         return *this;
     }
-
-
 
     // Matrix Invertion Found on the Net
     // Code was transformed to LTensors standards
     //
     // Compute inverse of matrix
-    Marray<T, rank, base> Inv(double * determ1 = NULL)
+    Marray<T, rank, base> Inv(double *determ1 = NULL)
     // Input
     //    A    -    Matrix A (N by N)
     // Outputs
@@ -501,25 +449,25 @@ public:
     //  determ -    Determinant of matrix A	(return value)
     {
         int N = (*this).get_dim1();
-        assert( N == (*this).get_dim2() );
+        assert(N == (*this).get_dim2());
         Marray<T, rank, base> A(N, N), Ainv(N, N);
         A = (*this);
-        double  determ;
+        double determ;
         int i, j, k;
-        Marray<T, 1 > scale(N); // Scale factor
-        Marray<T, rank, base> b(N, N);	 // work array
+        Marray<T, 1> scale(N);         // Scale factor
+        Marray<T, rank, base> b(N, N); // work array
         int *index;
-        index = new int [N + 1];
+        index = new int[N + 1];
 
         //* Matrix b is initialized to the identity matrix
         b.Identity();
 
         //* Set scale factor, scale(i) = max( |a(i,j)| ), for each row
-        for ( i = 0; i < N; i++ )
+        for (i = 0; i < N; i++)
         {
-            index[i] = i;			  // Initialize row index list
+            index[i] = i; // Initialize row index list
             T scalemax = 0.;
-            for ( j = 0; j < N; j++ )
+            for (j = 0; j < N; j++)
             {
                 scalemax = (scalemax > fabs(A(i, j))) ? scalemax : fabs(A(i, j));
             }
@@ -533,15 +481,15 @@ public:
 
         //* Loop over rows k = 1, ..., (N-1)
         int signDet = 1;
-        for ( k = 0; k < N - 1; k++ )
+        for (k = 0; k < N - 1; k++)
         {
             //* Select pivot row from max( |a(j,k)/s(j)| )
             double ratiomax = 0.0;
             int jPivot = k;
-            for ( i = k; i < N; i++ )
+            for (i = k; i < N; i++)
             {
                 double ratio = fabs(A(index[i], k)) / scale(index[i]);
-                if ( ratio > ratiomax )
+                if (ratio > ratiomax)
                 {
                     jPivot = i;
                     ratiomax = ratio;
@@ -549,33 +497,33 @@ public:
             }
             //* Perform pivoting using row index list
             int indexJ = index[k];
-            if ( jPivot != k )
+            if (jPivot != k)
             {
                 // Pivot
                 indexJ = index[jPivot];
-                index[jPivot] = index[k];   // Swap index jPivot and k
+                index[jPivot] = index[k]; // Swap index jPivot and k
                 index[k] = indexJ;
-                signDet *= -1;			  // Flip sign of determinant
+                signDet *= -1; // Flip sign of determinant
             }
             assert(fabs(A(indexJ, k)) > 0); //matrix is not invertible
             //* Perform forward elimination
-            for ( i = k + 1; i < N; i++ )
+            for (i = k + 1; i < N; i++)
             {
                 T coeff = A(index[i], k) / A(indexJ, k);
-                for ( j = k + 1; j < N; j++ )
+                for (j = k + 1; j < N; j++)
                 {
                     A(index[i], j) -= coeff * A(indexJ, j);
                 }
                 A(index[i], k) = coeff;
-                for ( j = 0; j < N; j++ )
+                for (j = 0; j < N; j++)
                 {
                     b(index[i], j) -= A(index[i], k) * b(indexJ, j);
                 }
             }
         }
         //* Compute determinant as product of diagonal elements
-        determ = signDet;	   // Sign of determinant
-        for ( i = 0; i < N; i++ )
+        determ = signDet; // Sign of determinant
+        for (i = 0; i < N; i++)
         {
             determ *= A(index[i], i);
         }
@@ -587,13 +535,13 @@ public:
         if (fabs(determ) > 1.e-30)
         {
             //* Perform backsubstitution
-            for ( k = 0; k < N; k++ )
+            for (k = 0; k < N; k++)
             {
                 Ainv(N - 1, k) = b(index[N - 1], k) / A(index[N - 1], N - 1);
-                for ( i = N - 2; i >= 0; i--)
+                for (i = N - 2; i >= 0; i--)
                 {
                     T sum = b(index[i], k);
-                    for ( j = i + 1; j < N; j++ )
+                    for (j = i + 1; j < N; j++)
                     {
                         sum -= A(index[i], j) * Ainv(j, k);
                     }
@@ -603,9 +551,9 @@ public:
         }
         else
         {
-            std::cout << "WARNING: matrix is not invertible, determinant = " << determ <<  std::endl;
+            std::cout << "WARNING: matrix is not invertible, determinant = " << determ << std::endl;
         }
-        delete [] index;	// Release allocated memory
+        delete[] index; // Release allocated memory
         return (Ainv);
     }
 
@@ -617,25 +565,25 @@ public:
     //  determ -    Determinant of matrix A	(return value)
     {
         int N = (*this).get_dim1();
-        assert( N == (*this).get_dim2() );
+        assert(N == (*this).get_dim2());
         Marray<T, rank, base> A(N, N);
         A = (*this);
 
         int i, j, k;
-        Marray<T, 1 > scale(N); // Scale factor
-        Marray<T, rank, base> b(N, N);	 // work array
+        Marray<T, 1> scale(N);         // Scale factor
+        Marray<T, rank, base> b(N, N); // work array
         int *index;
-        index = new int [N + 1];
+        index = new int[N + 1];
 
         //* Matrix b is initialized to the identity matrix
         b.Identity();
 
         //* Set scale factor, scale(i) = max( |a(i,j)| ), for each row
-        for ( i = 0; i < N; i++ )
+        for (i = 0; i < N; i++)
         {
-            index[i] = i;			  // Initialize row index list
+            index[i] = i; // Initialize row index list
             double scalemax = 0.;
-            for ( j = 0; j < N; j++ )
+            for (j = 0; j < N; j++)
             {
                 scalemax = (scalemax > fabs(A(i, j))) ? scalemax : fabs(A(i, j));
             }
@@ -649,15 +597,15 @@ public:
 
         //* Loop over rows k = 1, ..., (N-1)
         int signDet = 1;
-        for ( k = 0; k < N - 1; k++ )
+        for (k = 0; k < N - 1; k++)
         {
             //* Select pivot row from max( |a(j,k)/s(j)| )
             double ratiomax = 0.0;
             int jPivot = k;
-            for ( i = k; i < N; i++ )
+            for (i = k; i < N; i++)
             {
                 double ratio = fabs(A(index[i], k)) / scale(index[i]);
-                if ( ratio > ratiomax )
+                if (ratio > ratiomax)
                 {
                     jPivot = i;
                     ratiomax = ratio;
@@ -665,13 +613,13 @@ public:
             }
             //* Perform pivoting using row index list
             int indexJ = index[k];
-            if ( jPivot != k )
+            if (jPivot != k)
             {
                 // Pivot
                 indexJ = index[jPivot];
-                index[jPivot] = index[k];   // Swap index jPivot and k
+                index[jPivot] = index[k]; // Swap index jPivot and k
                 index[k] = indexJ;
-                signDet *= -1;			  // Flip sign of determinant
+                signDet *= -1; // Flip sign of determinant
             }
             //assert(fabs(A(indexJ,k))>0);  //matrix is not invertible
             if (!(fabs(A(indexJ, k)) > 0))
@@ -679,32 +627,32 @@ public:
                 return 0.0;
             }
             //* Perform forward elimination
-            for ( i = k + 1; i < N; i++ )
+            for (i = k + 1; i < N; i++)
             {
                 double coeff = A(index[i], k) / A(indexJ, k);
-                for ( j = k + 1; j < N; j++ )
+                for (j = k + 1; j < N; j++)
                 {
                     A(index[i], j) -= coeff * A(indexJ, j);
                 }
                 A(index[i], k) = coeff;
-                for ( j = 0; j < N; j++ )
+                for (j = 0; j < N; j++)
                 {
                     b(index[i], j) -= A(index[i], k) * b(indexJ, j);
                 }
             }
         }
         //* Compute determinant as product of diagonal elements
-        double determ = signDet;	   // Sign of determinant
-        for ( i = 0; i < N; i++ )
+        double determ = signDet; // Sign of determinant
+        for (i = 0; i < N; i++)
         {
             determ *= A(index[i], i);
         }
 
-        delete [] index;	// Release allocated memory
+        delete[] index; // Release allocated memory
         return (determ);
     }
 
-    Marray<T, 1> SolvebyDGESV(const Marray<T, 1> & b, bool *err = NULL)
+    Marray<T, 1> SolvebyDGESV(const Marray<T, 1> &b, bool *err = NULL)
     // Solve system of N linear equations with N unknowns
     // using Gaussian elimination with scaled partial pivoting
     // err returns true if process fails;
@@ -735,14 +683,14 @@ public:
         // solution(iG) = b(iG);
         // transposed(jG, iG) = (*this)(iG, jG);
 
-        double *aptr = new double[36];//this->data;
+        double *aptr = new double[36]; //this->data;
         double *bptr = new double[6];
         for (int i = 0; i < 6; i++)
         {
             bptr[i] = b(i);
             for (int j = 0; j < 6; j++)
             {
-                aptr[6 * i +  j] = (this->data)[6 * i +  j];
+                aptr[6 * i + j] = (this->data)[6 * i + j];
             }
         }
 
@@ -750,13 +698,13 @@ public:
         // int clapack_dgesv(const enum CBLAS_ORDER Order, const int N, const int NRHS,
         //                   double * A, const int lda, int *ipiv,
         //                   double * B, const int ldb)
-        info = clapack_dgesv(CblasRowMajor, N, nrhs, aptr,  lda, ipiv, bptr,  ldb);
+        info = clapack_dgesv(CblasRowMajor, N, nrhs, aptr, lda, ipiv, bptr, ldb);
 
-        if ( info > 0 )
+        if (info > 0)
         {
-            std::cout <<  "The diagonal element of the triangular factor of A,\n";
-            std::cout <<  "U(" << info << "," << info << ") is zero, so that A is singular;\n";
-            std::cout <<  "the solution could not be computed.\n";
+            std::cout << "The diagonal element of the triangular factor of A,\n";
+            std::cout << "U(" << info << "," << info << ") is zero, so that A is singular;\n";
+            std::cout << "the solution could not be computed.\n";
             *err = true;
         }
 
@@ -765,8 +713,8 @@ public:
             solution(i) = bptr[i];
         };
 
-        delete [] aptr;
-        delete [] bptr;
+        delete[] aptr;
+        delete[] bptr;
 #else
         std::cerr << "LTensor  - Marray:: SolvebyDGESV() - (in Marray_rank2.h) \n"
                   << "CLAPACK not available. Please link with -lclapack and check if the function: "
@@ -778,13 +726,13 @@ public:
         return solution;
     }
 
-    Marray<T, 1> SolvebyGaussElim(const Marray<T, 1> & b, bool *err = NULL)
+    Marray<T, 1> SolvebyGaussElim(const Marray<T, 1> &b, bool *err = NULL)
     // Solve system of N linear equations with N unknowns
     // using Gaussian elimination with scaled partial pivoting
     // err returns true if process fails;
     {
         int N = (*this).get_dim1();
-        assert( N == (*this).get_dim2() );
+        assert(N == (*this).get_dim2());
         Marray<T, rank, base> A(N, N);
         Marray<T, 1> b1(N), result(N);
         Index<'i'> iG;
@@ -885,7 +833,7 @@ public:
         return result;
     }
 
-    Marray<T, rank, base> SolvebyGaussElim(const Marray<T, rank, base> & b, bool *err = NULL)
+    Marray<T, rank, base> SolvebyGaussElim(const Marray<T, rank, base> &b, bool *err = NULL)
     // Solve system of N linear equations with N unknowns
     // using Gaussian elimination with scaled partial pivoting
     // First N rows and N+1 columns of A contain the system
@@ -896,7 +844,7 @@ public:
     // obtained from http://www.daniweb.com/forums/thread41803.html
     {
         int N = (*this).get_dim1();
-        assert( N == (*this).get_dim2() );
+        assert(N == (*this).get_dim2());
         int Nrhs = b.get_dim2();
         Marray<T, rank, base> A(N, N), b1(N, Nrhs), result(N, Nrhs);
         Index<'i'> iG;
@@ -1004,8 +952,6 @@ public:
         return result;
     }
 
-
-
     bool LU(Marray<int, 1> &indx, float &d)
     {
         //Performs LU decomposition
@@ -1018,13 +964,13 @@ public:
         int n = get_dim1();
         indx.resize(n);
         Marray<double, 1> vv(n); //vv stores the implicit scaling of each row.
-        d = 1.0;                        //no row interchanges yet
+        d = 1.0;                 //no row interchanges yet
 
         for (i = 0; i < n; i++) //Loop over rows to get the implicit scaling information
         {
             big = 0.0;
             for (j = 0; j < n; j++)
-                if ( (temp = absTrait<T>::function((*this)(i, j))) > big)
+                if ((temp = absTrait<T>::function((*this)(i, j))) > big)
                 {
                     big = temp;
                 }
@@ -1033,7 +979,7 @@ public:
                 return false;
             }
             //No nonzero largest element
-            vv(i) = 1.0 / big;          //save the scaling
+            vv(i) = 1.0 / big; //save the scaling
         }
         for (j = 0; j < n; j++) //this is loop over columns of Crout's method
         {
@@ -1046,7 +992,7 @@ public:
                 }
                 (*this)(i, j) = sum;
             }
-            big = 0.0;          //initialize for the search for largest pivot element
+            big = 0.0; //initialize for the search for largest pivot element
             for (i = j; i < n; i++)
             {
                 sum = (*this)(i, j);
@@ -1055,14 +1001,14 @@ public:
                     sum -= (*this)(i, k) * (*this)(k, j);
                 }
                 (*this)(i, j) = sum;
-                if ( (dum = vv(i) * absTrait<T>::function(sum) ) >= big)
+                if ((dum = vv(i) * absTrait<T>::function(sum)) >= big)
                 {
                     //Is the figure of merit for the pivot bettern than the best so far?
                     big = dum;
                     imax = i;
                 }
             }
-            if (j != imax)      //do we need to interchange rows?
+            if (j != imax) //do we need to interchange rows?
             {
 
                 for (k = 0; k < n; k++) //yes, do so
@@ -1071,8 +1017,8 @@ public:
                     (*this)(imax, k) = (*this)(j, k);
                     (*this)(j, k) = dum;
                 }
-                d = -d;             //change parity
-                vv(imax) = vv(j);   //interchange the scale factor
+                d = -d;           //change parity
+                vv(imax) = vv(j); //interchange the scale factor
             }
             indx(j) = imax;
             if ((*this)(j, j) == 0.0)
@@ -1082,13 +1028,13 @@ public:
             //if the pivot element is ZERO the matrix is singular.
             if (j != n - 1)
             {
-                dum = 1.0 / ((*this)(j, j));  //divide by pivot
+                dum = 1.0 / ((*this)(j, j)); //divide by pivot
                 for (i = j + 1; i < n; i++)
                 {
                     (*this)(i, j) *= dum;
                 }
             }
-        }   //go back for the next column in the reduction
+        } //go back for the next column in the reduction
 
         return true;
     }
@@ -1108,7 +1054,7 @@ public:
         return true;
     }
 
-    void LU_backSubs(const Marray<int, 1> &indx, Marray<T, 1> &b )
+    void LU_backSubs(const Marray<int, 1> &indx, Marray<T, 1> &b)
     {
         //This algoritm assumes this is an LU factorized matrix
         int i, ii = 0, ip, j;
@@ -1144,10 +1090,9 @@ public:
             }
             b(i - 1) = sum / (*this)(i - 1, i - 1);
         }
-
     }
 
-    bool  Cholesky(Marray<T, 1> &p)
+    bool Cholesky(Marray<T, 1> &p)
     {
         //P represents the diagonal of the decomposed matrix
         //while in the lower diagonal of this is L (Lt*L=A)
@@ -1160,7 +1105,7 @@ public:
         {
             for (j = i; j < n; j++)
             {
-                for (sum = (*this)(i, j) , k = i - 1 ; k >= 0; k--)
+                for (sum = (*this)(i, j), k = i - 1; k >= 0; k--)
                 {
                     sum -= (*this)(i, k) * (*this)(j, k);
                 }
@@ -1201,12 +1146,12 @@ public:
         y.resize(n, n);
         Marray<int, 1> indx(n);
         Marray<T, 1> col(n);
-        Index <'i'> iG;
+        Index<'i'> iG;
         float d;
         int j;
 
         //Decompose the matrix just once.
-        if ( !LU(indx, d) )
+        if (!LU(indx, d))
         {
             return false;
         }
@@ -1220,9 +1165,7 @@ public:
         }
 
         return true;
-
     }
-
 
     bool getInvertByLU(Marray<T, rank> &A)
     {
@@ -1236,10 +1179,7 @@ public:
         return true;
     }
 
-
-
-
-    void saveToSpacedFile(const char* fileName)
+    void saveToSpacedFile(const char *fileName)
     {
 
         std::ofstream out(fileName, std::ios::out | std::ios::trunc);
@@ -1258,13 +1198,11 @@ public:
             out << std::endl;
         }
         out.close();
-
-
     }
 
     //Column x Rows ordered data
 
-    void loadFromSpacedFile(const char* fileName)
+    void loadFromSpacedFile(const char *fileName)
     {
 
         std::ifstream in(fileName);
@@ -1290,125 +1228,115 @@ public:
             }
 
         in.close();
-
     }
-
-
 
     ///////////////////////////////////////////////////////////////
     // create IndexedExpressions
     ///////////////////////////////////////////////////////////////
 
-
     //F_Expres
 
-    inline F_Expr2 < Encapsulate_to_Expr2< Marray<T, rank, base>, T, rank, 12, IndexF, IndexF>, T>
-    operator() (const IndexF  & index1, const IndexF & index2)
+    inline F_Expr2<Encapsulate_to_Expr2<Marray<T, rank, base>, T, rank, 12, IndexF, IndexF>, T>
+    operator()(const IndexF &index1, const IndexF &index2)
     {
 
         typedef Encapsulate_to_Expr2<Marray<T, rank, base>, T, rank, 12, IndexF, IndexF> Expr_Obj;
         return F_Expr2<Expr_Obj, T>(Expr_Obj(*this, index1, index2));
     }
 
-    inline F_Expr2 < Encapsulate_to_Expr2<const Marray<T, rank, base>, T, rank, 12, IndexF, IndexF>, T>
-    operator() (const IndexF  & index1, const IndexF & index2) const
+    inline F_Expr2<Encapsulate_to_Expr2<const Marray<T, rank, base>, T, rank, 12, IndexF, IndexF>, T>
+    operator()(const IndexF &index1, const IndexF &index2) const
     {
         typedef Encapsulate_to_Expr2<const Marray<T, rank, base>, T, rank, 12, IndexF, IndexF> Expr_Obj;
         return F_Expr2<Expr_Obj, T>(Expr_Obj(*this, index1, index2));
     }
 
-
-
-    inline F_Expr1 < Encapsulate_to_Expr1<Marray<T, rank, base>, T, rank, 1, IndexF>, T>
-    operator() (const IndexF & index1, const int N)
+    inline F_Expr1<Encapsulate_to_Expr1<Marray<T, rank, base>, T, rank, 1, IndexF>, T>
+    operator()(const IndexF &index1, const int N)
     {
         typedef Encapsulate_to_Expr1<Marray<T, rank, base>, T, rank, 1, IndexF> Expr_Obj;
         return F_Expr1<Expr_Obj, T>(Expr_Obj(*this, N, index1));
     }
-    inline F_Expr1 < Encapsulate_to_Expr1<const Marray<T, rank, base>, T, rank, 1, IndexF>, T>
-    operator() (const IndexF & index1, const int N) const
+    inline F_Expr1<Encapsulate_to_Expr1<const Marray<T, rank, base>, T, rank, 1, IndexF>, T>
+    operator()(const IndexF &index1, const int N) const
     {
         typedef Encapsulate_to_Expr1<const Marray<T, rank, base>, T, rank, 1, IndexF> Expr_Obj;
         return F_Expr1<Expr_Obj, T>(Expr_Obj(*this, N, index1));
     }
 
-
-    inline F_Expr1 < Encapsulate_to_Expr1<Marray<T, rank, base>, T, rank, 2, IndexF>, T>
-    operator() (const int N, const IndexF & index1 )
+    inline F_Expr1<Encapsulate_to_Expr1<Marray<T, rank, base>, T, rank, 2, IndexF>, T>
+    operator()(const int N, const IndexF &index1)
     {
         typedef Encapsulate_to_Expr1<Marray<T, rank, base>, T, rank, 2, IndexF> Expr_Obj;
         return F_Expr1<Expr_Obj, T>(Expr_Obj(*this, N, index1));
     }
-    inline F_Expr1 < Encapsulate_to_Expr1<const Marray<T, rank, base>, T, rank, 2, IndexF>, T>
-    operator() (const int N, const IndexF & index1 ) const
+    inline F_Expr1<Encapsulate_to_Expr1<const Marray<T, rank, base>, T, rank, 2, IndexF>, T>
+    operator()(const int N, const IndexF &index1) const
     {
         typedef Encapsulate_to_Expr1<const Marray<T, rank, base>, T, rank, 2, IndexF> Expr_Obj;
         return F_Expr1<Expr_Obj, T>(Expr_Obj(*this, N, index1));
     }
 
-
     //end FExpres
 
-    template < char i, char j , int iType1, int iType2>
-    inline Expr2 < Encapsulate_to_Expr2<Marray<T, rank, base>, T, rank, 12, Index<i, iType1>, Index<j, iType2> >, T, i , j >
-    operator() (const Index < i , iType1> & index1, const Index < j , iType2> & index2)
+    template <char i, char j, int iType1, int iType2>
+    inline Expr2<Encapsulate_to_Expr2<Marray<T, rank, base>, T, rank, 12, Index<i, iType1>, Index<j, iType2>>, T, i, j>
+    operator()(const Index<i, iType1> &index1, const Index<j, iType2> &index2)
     {
 
-        typedef Encapsulate_to_Expr2<Marray<T, rank, base>, T, rank, 12, Index<i, iType1> , Index <j, iType2 > >Expr_Obj;
+        typedef Encapsulate_to_Expr2<Marray<T, rank, base>, T, rank, 12, Index<i, iType1>, Index<j, iType2>> Expr_Obj;
         return Expr2<Expr_Obj, T, i, j>(Expr_Obj(*this, index1, index2));
     }
 
-    template < char i, char j , int iType1, int iType2>
-    inline Expr2 < Encapsulate_to_Expr2<const Marray<T, rank, base>, T, rank, 12, Index<i, iType1>, Index<j, iType2> >, T, i , j >
-    operator() (const Index < i , iType1> & index1, const Index <j , iType2> & index2)const
+    template <char i, char j, int iType1, int iType2>
+    inline Expr2<Encapsulate_to_Expr2<const Marray<T, rank, base>, T, rank, 12, Index<i, iType1>, Index<j, iType2>>, T, i, j>
+    operator()(const Index<i, iType1> &index1, const Index<j, iType2> &index2) const
     {
 
-        typedef Encapsulate_to_Expr2<const Marray<T, rank, base>, T, rank, 12, Index<i, iType1> , Index <j, iType2 > >Expr_Obj;
+        typedef Encapsulate_to_Expr2<const Marray<T, rank, base>, T, rank, 12, Index<i, iType1>, Index<j, iType2>> Expr_Obj;
         return Expr2<Expr_Obj, T, i, j>(Expr_Obj(*this, index1, index2));
     }
 
     //checked
 
-
-    template < char i, int iType1>
-    inline Expr1 < Encapsulate_to_Expr1<Marray<T, rank, base>, T, rank, 1, Index<i, iType1> >, T, i>
-    operator() (const Index < i, iType1 > & index1, const int N)
+    template <char i, int iType1>
+    inline Expr1<Encapsulate_to_Expr1<Marray<T, rank, base>, T, rank, 1, Index<i, iType1>>, T, i>
+    operator()(const Index<i, iType1> &index1, const int N)
     {
-        typedef Encapsulate_to_Expr1<Marray<T, rank, base>, T, rank, 1, Index<i, iType1> > Expr_Obj;
+        typedef Encapsulate_to_Expr1<Marray<T, rank, base>, T, rank, 1, Index<i, iType1>> Expr_Obj;
         return Expr1<Expr_Obj, T, i>(Expr_Obj(*this, N, index1));
     }
 
-    template < char i, int iType1>
-    inline Expr1 < Encapsulate_to_Expr1<const Marray<T, rank, base>, T, rank, 1, Index<i, iType1> >, T, i>
-    operator() (const Index < i, iType1 > & index1, const int N)const
+    template <char i, int iType1>
+    inline Expr1<Encapsulate_to_Expr1<const Marray<T, rank, base>, T, rank, 1, Index<i, iType1>>, T, i>
+    operator()(const Index<i, iType1> &index1, const int N) const
     {
-        typedef Encapsulate_to_Expr1<const Marray<T, rank, base>, T, rank, 1, Index<i, iType1> > Expr_Obj;
+        typedef Encapsulate_to_Expr1<const Marray<T, rank, base>, T, rank, 1, Index<i, iType1>> Expr_Obj;
         return Expr1<Expr_Obj, T, i>(Expr_Obj(*this, N, index1));
-    }
-
-
-    //checked
-
-    template < char i, int iType2>
-    inline Expr1 < Encapsulate_to_Expr1<Marray<T, rank, base>, T, rank, 2, Index<i, iType2> >, T, i>
-    operator() (const int N, const Index < i, iType2 > & index2 )
-    {
-        typedef Encapsulate_to_Expr1<Marray<T, rank, base>, T, rank, 2, Index<i, iType2> > Expr_Obj;
-        return Expr1<Expr_Obj, T, i>(Expr_Obj(*this, N, index2));
-    }
-
-    template < char i, int iType2>
-    inline Expr1 < Encapsulate_to_Expr1<const Marray<T, rank, base>, T, rank, 2, Index<i, iType2> >, T, i>
-    operator() (const int N, const Index < i, iType2 > & index2 )const
-    {
-        typedef Encapsulate_to_Expr1<const Marray<T, rank, base>, T, rank, 2, Index<i, iType2> > Expr_Obj;
-        return Expr1<Expr_Obj, T, i>(Expr_Obj(*this, N, index2));
     }
 
     //checked
 
-    template < char i , int iType1, int iType2>
-    inline T  operator() (const Index < i, iType1 > & index1, const Index < i, iType2 > & index2)
+    template <char i, int iType2>
+    inline Expr1<Encapsulate_to_Expr1<Marray<T, rank, base>, T, rank, 2, Index<i, iType2>>, T, i>
+    operator()(const int N, const Index<i, iType2> &index2)
+    {
+        typedef Encapsulate_to_Expr1<Marray<T, rank, base>, T, rank, 2, Index<i, iType2>> Expr_Obj;
+        return Expr1<Expr_Obj, T, i>(Expr_Obj(*this, N, index2));
+    }
+
+    template <char i, int iType2>
+    inline Expr1<Encapsulate_to_Expr1<const Marray<T, rank, base>, T, rank, 2, Index<i, iType2>>, T, i>
+    operator()(const int N, const Index<i, iType2> &index2) const
+    {
+        typedef Encapsulate_to_Expr1<const Marray<T, rank, base>, T, rank, 2, Index<i, iType2>> Expr_Obj;
+        return Expr1<Expr_Obj, T, i>(Expr_Obj(*this, N, index2));
+    }
+
+    //checked
+
+    template <char i, int iType1, int iType2>
+    inline T operator()(const Index<i, iType1> &index1, const Index<i, iType2> &index2)
     {
         T res = 0;
         for (int n1 = 0; n1 < get_dim1(); ++n1)
@@ -1418,8 +1346,8 @@ public:
         return res;
     }
 
-    template < char i , int iType1, int iType2>
-    inline T  operator() (const Index < i, iType1 > & index1, const Index < i, iType2 > & index2) const
+    template <char i, int iType1, int iType2>
+    inline T operator()(const Index<i, iType1> &index1, const Index<i, iType2> &index2) const
     {
         T res = 0;
         for (int n1 = 0; n1 < get_dim1(); ++n1)
@@ -1431,16 +1359,12 @@ public:
 
     //added 02/06
 
-
-
-
-
     /////////////////////////////////////////////////////////////
     // Assignation Operations from other Marray<T,rank,base> object
     /////////////////////////////////////////////////////////////
 
     template <class U, class base2>
-    inline Marray<T, rank, base> & operator+= (const Marray<U, rank, base2> & a)
+    inline Marray<T, rank, base> &operator+=(const Marray<U, rank, base2> &a)
     {
         for (int i = 0; i < get_dim1(); i++)
         {
@@ -1451,8 +1375,6 @@ public:
         }
         return *this;
     }
-
-
 
     //Implemented for compatibility only, shouldn't be used in performance critic sections
     //will fix this with the new cxx specification
@@ -1473,13 +1395,11 @@ public:
         return temp;
     }
 
-
-
     //Compatibily operators
     //cstyle ordering
 
     template <class Type>
-    void fromCArray(Type * datos, int dim1, int dim2)
+    void fromCArray(Type *datos, int dim1, int dim2)
     {
         resize(dim1, dim2);
 
@@ -1491,9 +1411,8 @@ public:
     }
 
     template <class Type>
-    void toCArray(Type * datos)
+    void toCArray(Type *datos)
     {
-
 
         int dim1 = get_dim1();
         int dim2 = get_dim2();
@@ -1505,7 +1424,7 @@ public:
     }
 
     template <class U, class base2>
-    inline Marray<T, rank, base> & operator-= (const Marray<U, rank, base2> & a)
+    inline Marray<T, rank, base> &operator-=(const Marray<U, rank, base2> &a)
     {
         for (int i = 0; i < get_dim1(); i++)
         {
@@ -1533,21 +1452,18 @@ public:
             for (int j = 0; j < get_dim2(); j++)
             {
 
-                if ( (*this)(i, j) != a(i, j))
+                if ((*this)(i, j) != a(i, j))
                 {
                     return false;
                 }
             }
-
         }
         return true;
-
     }
 
-
-//------------------------------------------------------------------------------------------
-//Computes the Moore-Penrose pseudo inverse of the matrix using SVDSorted
-//------------------------------------------------------------------------------------------
+    //------------------------------------------------------------------------------------------
+    //Computes the Moore-Penrose pseudo inverse of the matrix using SVDSorted
+    //------------------------------------------------------------------------------------------
     Marray<T, 2, base> PInv()
     {
 
@@ -1570,7 +1486,7 @@ public:
         //and leaving the 0s be.
         for (int l = 0; l < sd; ++l)
         {
-            W(l, l) = (T) (W(l, l) > eps ? 1.0 / W(l, l) : 0.0);
+            W(l, l) = (T)(W(l, l) > eps ? 1.0 / W(l, l) : 0.0);
         }
 
         inv.resize(get_dim2(), get_dim1());
@@ -1582,25 +1498,23 @@ public:
         inv(i, k) = temp(i, j) * U(k, j);
 
         return inv;
-
-
     }
-//------------------------------------------------------------------------------------------
-//Given the matrix A stored in u[0..m-1][0..n-1], this routine computes its singular value
-//decomposition, A D U W  VT and stores the results in the matrices u and v, and the vector
-//w in descending order.
-//------------------------------------------------------------------------------------------
-    void SVDSorted( Marray<T, 2, base> &U, Marray<T, 2, base> &W, Marray<T, 2, base> &V)
+    //------------------------------------------------------------------------------------------
+    //Given the matrix A stored in u[0..m-1][0..n-1], this routine computes its singular value
+    //decomposition, A D U W  VT and stores the results in the matrices u and v, and the vector
+    //w in descending order.
+    //------------------------------------------------------------------------------------------
+    void SVDSorted(Marray<T, 2, base> &U, Marray<T, 2, base> &W, Marray<T, 2, base> &V)
     {
         SVD(U, W, V);
         SVDReorder(U, W, V);
     }
-//------------------------------------------------------------------------------------------
-//Given the matrix A stored in u[0..m-1][0..n-1], this routine computes its singular value
-//decomposition, A D U W  VT and stores the results in the matrices u and v, and the vector
-//w.
-//------------------------------------------------------------------------------------------
-    void SVD( Marray<T, 2, base> &U, Marray<T, 2, base> &W, Marray<T, 2, base> &V)
+    //------------------------------------------------------------------------------------------
+    //Given the matrix A stored in u[0..m-1][0..n-1], this routine computes its singular value
+    //decomposition, A D U W  VT and stores the results in the matrices u and v, and the vector
+    //w.
+    //------------------------------------------------------------------------------------------
+    void SVD(Marray<T, 2, base> &U, Marray<T, 2, base> &W, Marray<T, 2, base> &V)
     {
         U = *this;
         int m = get_dim1();
@@ -1650,7 +1564,7 @@ public:
                     }
                     for (k = i; k < m; k++)
                     {
-                        U(k, i) *= (T) scale;
+                        U(k, i) *= (T)scale;
                     }
                 }
             }
@@ -1685,7 +1599,7 @@ public:
                         }
                         for (k = l - 1; k < n; k++)
                         {
-                            U(j, k) += (T) s * rv1(k);
+                            U(j, k) += (T)s * rv1(k);
                         }
                     }
                     for (k = l - 1; k < n; k++)
@@ -1714,7 +1628,7 @@ public:
                         }
                         for (k = l; k < n; k++)
                         {
-                            V(k, j) += (T) s * V(k, i);
+                            V(k, j) += (T)s * V(k, i);
                         }
                     }
                 }
@@ -1747,7 +1661,7 @@ public:
                     f = (s / U(i, i)) * g;
                     for (k = i; k < m; k++)
                     {
-                        U(k, j) += (T) f * U(k, i);
+                        U(k, j) += (T)f * U(k, i);
                     }
                 }
                 for (j = i; j < m; j++)
@@ -1755,7 +1669,8 @@ public:
                     U(j, i) *= (T)g;
                 }
             }
-            else for (j = i; j < m; j++)
+            else
+                for (j = i; j < m; j++)
                 {
                     U(j, i) = 0.0;
                 }
@@ -1807,11 +1722,11 @@ public:
                     }
                 }
                 z = W(k, k);
-                if (l == k)   //Convergence.
+                if (l == k) //Convergence.
                 {
-                    if (z < 0.0)   //Singular value is made nonnegative.
+                    if (z < 0.0) //Singular value is made nonnegative.
                     {
-                        W(k, k) = (T) - z;
+                        W(k, k) = (T)-z;
                         for (j = 0; j < n; j++)
                         {
                             V(j, k) = -V(j, k);
@@ -1821,7 +1736,7 @@ public:
                 }
                 if (its == 29)
                 {
-                    throw ("no convergence in 30 svdcmp iterations");
+                    throw("no convergence in 30 svdcmp iterations");
                 }
                 x = W(l, l); //Shift from bottom 2-by-2 minor.
                 nm = k - 1;
@@ -1831,7 +1746,7 @@ public:
                 f = ((y - z) * (y + z) + (g - h) * (g + h)) / (2.0 * h * y);
                 g = pythag(f, 1.0);
                 f = ((x - z) * (x + z) + h * ((y / (f + copysign(g, f))) - h)) / x;
-                c = s = 1.0;	//Next QR transformation:
+                c = s = 1.0; //Next QR transformation:
                 for (j = l; j <= nm; j++)
                 {
                     i = j + 1;
@@ -1855,7 +1770,7 @@ public:
                         V(jj, i) = (T)(z * c - x * s);
                     }
                     z = pythag(f, h);
-                    W(j, j) = (T)z;		//Rotation can be arbitrary if z D 0.
+                    W(j, j) = (T)z; //Rotation can be arbitrary if z D 0.
                     if (z)
                     {
                         z = 1.0 / z;
@@ -1877,14 +1792,13 @@ public:
                 W(k, k) = (T)x;
             }
         }
-
     }
-//-------------------------------------------------------------------------------------------------
-//Given the output of SVD, this routine sorts the singular values, and corresponding columns
-//of u and v, by decreasing magnitude. Also, signs of corresponding columns are
-//ipped so as to
-//maximize the number of positive elements.
-//-------------------------------------------------------------------------------------------------
+    //-------------------------------------------------------------------------------------------------
+    //Given the output of SVD, this routine sorts the singular values, and corresponding columns
+    //of u and v, by decreasing magnitude. Also, signs of corresponding columns are
+    //ipped so as to
+    //maximize the number of positive elements.
+    //-------------------------------------------------------------------------------------------------
     void SVDReorder(Marray<T, 2, base> &U, Marray<T, 2, base> &W, Marray<T, 2, base> &V)
     {
 
@@ -1897,8 +1811,7 @@ public:
         {
             inc *= 3;
             inc++;
-        }
-        while (inc <= n);   //Sort. The method is Shell's sort.
+        } while (inc <= n); //Sort. The method is Shell's sort.
         //(The work is negligible as compared
         //to that already done in
         //decompose.)
@@ -1937,23 +1850,24 @@ public:
                 W(j, j) = (T)sw;
                 for (k = 0; k < m; k++)
                 {
-                    U(k, j) = (T) su(k);
+                    U(k, j) = (T)su(k);
                 }
                 for (k = 0; k < n; k++)
                 {
-                    V(k, j) = (T) sv(k);
+                    V(k, j) = (T)sv(k);
                 }
             }
-        }
-        while (inc > 1);
+        } while (inc > 1);
         for (k = 0; k < n; k++) //Flip signs.
         {
             s = 0;
-            for (i = 0; i < m; i++) if (U(i, k) < 0.)
+            for (i = 0; i < m; i++)
+                if (U(i, k) < 0.)
                 {
                     s++;
                 }
-            for (j = 0; j < n; j++) if (V(j, k) < 0.)
+            for (j = 0; j < n; j++)
+                if (V(j, k) < 0.)
                 {
                     s++;
                 }
@@ -1970,22 +1884,17 @@ public:
             }
         }
     }
-
-
-
 };
 
-
-
-
 template <class Type, class base>
-std::ostream & operator<< (std::ostream & os, const  Marray<Type, rank, base> & v)
+std::ostream &operator<<(std::ostream &os, const Marray<Type, rank, base> &v)
 {
-    std::cout << "MArray2[" << v.get_dim1() << "," << v.get_dim2() << "] = " << std::endl << "\t[ " << std::endl;
+    std::cout << "MArray2[" << v.get_dim1() << "," << v.get_dim2() << "] = " << std::endl
+              << "\t[ " << std::endl;
 
-    if ((v.get_dim1()*v.get_dim2()) > 0)
+    if ((v.get_dim1() * v.get_dim2()) > 0)
     {
-        for ( int i = 0; i < v.get_dim1(); i++)
+        for (int i = 0; i < v.get_dim1(); i++)
         {
             for (int j = 0; j < v.get_dim2(); j++)
             {
@@ -2002,4 +1911,3 @@ std::ostream & operator<< (std::ostream & os, const  Marray<Type, rank, base> & 
 #undef rank
 
 #endif
-

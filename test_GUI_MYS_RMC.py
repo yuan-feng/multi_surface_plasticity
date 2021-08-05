@@ -1,7 +1,9 @@
 #!/usr/bin/python
 # -*- coding: utf-8 -*-
-from Tkinter import Tk, Text, TOP, BOTH, X, N, LEFT, Canvas, END
-from ttk import Frame, Label, Entry, Button
+from tkinter import Tk, Text, TOP, BOTH, X, N, LEFT, Canvas, END
+from tkinter.ttk import Frame, Label, Entry, Button
+import matplotlib
+matplotlib.use("Agg")
 from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg
 from matplotlib.figure import Figure
 from subprocess import call
@@ -83,12 +85,12 @@ class Example(Frame):
             argv.append(str(field_value))
 
         # Call the executable to run Gauss point
-        print "Start calculation! "
+        print("Start calculation! ")
         arg = ' '.join([str(x) for x in argv])
         command = "script -c './test_MYS_RMC_equal_shear " + arg + " ' log" 
         call(sh.split(command))
 
-        print "Start Plotting! "
+        print("Start Plotting! ")
         strain_stress = loadtxt('strain_stress.txt')
         strain = strain_stress[:,0]
         stress = strain_stress[:,1]
@@ -106,10 +108,10 @@ class Example(Frame):
             self.canvas.draw()
             self.outfileNum = self.outfileNum + 1
             self.figSave(argv)
-            print "Delete the old plot and Re-Draw!"
+            print("Delete the old plot and Re-Draw!")
         # In the first plot:
         except AttributeError:
-            print "First time plot!"
+            print("First time plot!")
             self.fig = Figure()
             self.ax = self.fig.add_subplot(111)
             self.line, = self.ax.plot(strain,stress)
