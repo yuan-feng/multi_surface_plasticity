@@ -41,6 +41,11 @@ The cyclic behaviors of the stress-strain results:
 sudo apt install python-tk python3-matplotlib
 ```
 
+#### Notes
+Tested on 
+* g++-7.4.0
+* python 3.6.8
+
 #### Reference
 
 Prevost, Jean H. "A simple plasticity theory for frictional cohesionless soils." International Journal of Soil Dynamics and Earthquake Engineering 4, no. 1 (1985): 9-17.
